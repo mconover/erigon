@@ -578,10 +578,10 @@ func verifyAndSaveNewPoSHeader(
 	forkingHash, err := cfg.blockReader.CanonicalHash(ctx, tx, forkingPoint)
 
 	canExtendCanonical := forkingHash == currentHeadHash
-	canExtendFork := cfg.forkValidator.ExtendingForkHeadHash() == (common.Hash{}) || header.ParentHash == cfg.forkValidator.ExtendingForkHeadHash()
 
-	if cfg.memoryOverlay && (canExtendFork || header.ParentHash != currentHeadHash) {
-		status, latestValidHash, validationError, criticalError := cfg.forkValidator.ValidatePayload(tx, header, body, header.ParentHash == currentHeadHash /* extendCanonical */)
+	if cfg.memoryOverlay {
+		extendingHash := cfg.forkValidator.ExtendingForkHeadHash()
+		status, latestValidHash, validationError, criticalError := cfg.forkValidator.ValidatePayload(tx, header, body, extendingHash == common.Hash{} || header.ParentHash == extendingHash /* extendCanonical */)
 		if criticalError != nil {
 			return nil, false, criticalError
 		}
