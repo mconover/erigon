@@ -1293,9 +1293,10 @@ func WaitForDownloader(ctx context.Context, cfg HeadersCfg, tx kv.RwTx) error {
 			return err
 		}
 	}
-
+	
 	if len(missingSnapshots) > 0 {
 		log.Warn("[Snapshots] downloading missing snapshots")
+		return fmt.Errorf("Missing snapshots")
 	}
 
 	// send all hashes to the Downloader service
@@ -1320,6 +1321,31 @@ func WaitForDownloader(ctx context.Context, cfg HeadersCfg, tx kv.RwTx) error {
 		downloadRequest = append(downloadRequest, snapshotsync.NewDownloadRequest(&r, "", ""))
 	}
 
+	skipDownload := true // TODO: make this configurable
+	var m runtime.MemStats
+	logEvery := time.NewTicker(logInterval)
+	defer logEvery.Stop()
+
+	// Check once without delay, for faster erigon re-start
+	stats, err := cfg.snapshotDownloader.Stats(ctx, &proto_downloader.StatsRequest{})
+	if err == nil && stats.Completed {
+		log.Info("[Snapshots] Stats completed")
+	} else {
+		log.Info("[Snapshots] Downloader", "completed", stats.Completed, "error", err)
+	}
+
+	if skipDownload {
+		log.Info("[Snapshots] Skipping download")
+		log.Trace("[Snapshots]", "Request count", len(downloadRequest))
+
+		// r is snapshotsync.DownloadRequest
+		for i, r := range downloadRequest {
+			log.Trace("[Snapshots]", "Index", i, "download request", r)
+		}
+		
+		goto Finish
+	}
+
 	log.Info("[Snapshots] Fetching torrent files metadata")
 	for {
 		select {
@@ -1333,15 +1359,6 @@ func WaitForDownloader(ctx context.Context, cfg HeadersCfg, tx kv.RwTx) error {
 			continue
 		}
 		break
-	}
-	logEvery := time.NewTicker(logInterval)
-	defer logEvery.Stop()
-	var m runtime.MemStats
-
-	// Check once without delay, for faster erigon re-start
-	stats, err := cfg.snapshotDownloader.Stats(ctx, &proto_downloader.StatsRequest{})
-	if err == nil && stats.Completed {
-		goto Finish
 	}
 
 	// Print download progress until all segments are available
