@@ -385,7 +385,7 @@ func Erigon22(genesis *core.Genesis, logger log.Logger) error {
 	}
 	cfg := ethconfig.Defaults
 	cfg.DeprecatedTxPool.Disable = true
-	cfg.Dirs = datadir2.New(datadir)
+	cfg.Dirs = datadir2.New(datadir, snapdir)
 	cfg.Snapshot = allSnapshots.Cfg()
 	stagedSync, err := stages2.NewStagedSync(context.Background(), logger, db, p2p.Config{}, &cfg, sentryControlServer, datadir, &stagedsync.Notifications{}, nil, allSnapshots, nil, nil)
 	if err != nil {

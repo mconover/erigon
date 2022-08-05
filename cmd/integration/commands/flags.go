@@ -29,6 +29,8 @@ var (
 	pruneTBefore, pruneCBefore     uint64
 	experiments                    []string
 	chain                          string // Which chain to use (mainnet, ropsten, rinkeby, goerli, etc.)
+	snapdirCli                     string
+	snapshotsBool                  bool
 )
 
 func must(err error) {
@@ -92,12 +94,16 @@ func withDataDir2(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&datadirCli, utils.DataDirFlag.Name, paths.DefaultDataDir(), utils.DataDirFlag.Usage)
 	must(cmd.MarkFlagDirname(utils.DataDirFlag.Name))
 	must(cmd.MarkFlagRequired(utils.DataDirFlag.Name))
+	cmd.Flags().StringVar(&snapdirCli, utils.SnapDirFlag.Name, paths.DefaultSnapDir(), utils.SnapDirFlag.Usage)
 	cmd.Flags().IntVar(&databaseVerbosity, "database.verbosity", 2, "Enabling internal db logs. Very high verbosity levels may require recompile db. Default: 2, means warning.")
 }
 
 func withDataDir(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&datadirCli, "datadir", paths.DefaultDataDir(), "data directory for temporary ELT files")
 	must(cmd.MarkFlagDirname("datadir"))
+
+	cmd.Flags().StringVar(&snapdirCli, "snapdir", paths.DefaultSnapDir(), "data directory for snapshots")
+	must(cmd.MarkFlagDirname("snapdir"))
 
 	cmd.Flags().StringVar(&chaindata, "chaindata", "", "path to the db")
 	must(cmd.MarkFlagDirname("chaindata"))

@@ -79,6 +79,7 @@ var DefaultFlags = []cli.Flag{
 	AuthRpcWriteTimeoutFlag,
 	AuthRpcIdleTimeoutFlag,
 
+	utils.SnapDirFlag,
 	utils.SnapKeepBlocksFlag,
 	utils.SnapStopFlag,
 	utils.DbPageSizeFlag,

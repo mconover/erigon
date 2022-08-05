@@ -1153,7 +1153,7 @@ func newSync(ctx context.Context, db kv.RwDB, miningConfig *params.MiningConfig)
 	if miningConfig != nil {
 		cfg.Miner = *miningConfig
 	}
-	cfg.Dirs = datadir.New(datadirCli)
+	cfg.Dirs = datadir.New(datadirCli, snapdirCli)
 	allSn := allSnapshots(db)
 	cfg.Snapshot = allSn.Cfg()
 	var engine consensus.Engine
