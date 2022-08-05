@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"golang.org/x/sys/windows"
 
 	"github.com/ledgerwatch/erigon-lib/etl"
 	"github.com/ledgerwatch/erigon-lib/kv"
@@ -369,8 +370,10 @@ func (hd *HeaderDownload) ReadProgressFromDb(tx kv.RwTx) (err error) {
 	defer hd.lock.Unlock()
 	hd.highestInDb, err = stages.GetStageProgress(tx, stages.Headers)
 	if err != nil {
+		log.Error("[ReadProgressFromDB] GetStageProgress", "err", err)
 		return err
 	}
+	log.Debug("[ReadProgressFromDB] GetStageProgress", "highestedInDb", hd.highestInDb)
 	return nil
 }
 
@@ -485,9 +488,9 @@ func (hd *HeaderDownload) UpdateRetryTime(req *HeaderRequest, currentTime time.T
 func (hd *HeaderDownload) RequestSkeleton() *HeaderRequest {
 	hd.lock.RLock()
 	defer hd.lock.RUnlock()
-	log.Debug("Request skeleton", "anchors", len(hd.anchors), "top seen height", hd.topSeenHeightPoW, "highestInDb", hd.highestInDb)
 	stride := uint64(8 * 192)
 	strideHeight := hd.highestInDb + stride
+	log.Trace("Request skeleton", "TID", windows.GetCurrentThreadId(), "anchors", len(hd.anchors), "top seen height", hd.topSeenHeightPoW, "highestInDb", hd.highestInDb, "strideHeight", strideHeight)
 	var length uint64 = 192
 	return &HeaderRequest{Number: strideHeight, Length: length, Skip: stride - 1, Reverse: false}
 }
@@ -950,11 +953,18 @@ func (hd *HeaderDownload) ProcessHeader(sh ChainSegmentHeader, newBlock bool, pe
 	anchor, foundAnchor := hd.anchors[sh.Hash]
 	if !foundParent && !foundAnchor {
 		if sh.Number < hd.highestInDb {
-			log.Debug(fmt.Sprintf("new anchor too far in the past: %d, latest header in db: %d", sh.Number, hd.highestInDb))
+			log.Trace("[ProcessHeader] anchor too old", 
+			          "TID", windows.GetCurrentThreadId(), 
+			          "newBlock", "newBlock",
+			          "anchorBlockNumber", sh.Number,
+			          "highestInDb", hd.highestInDb)
 			return false
 		}
 		if len(hd.anchors) >= hd.anchorLimit {
-			log.Debug(fmt.Sprintf("too many anchors: %d, limit %d", len(hd.anchors), hd.anchorLimit))
+			log.Trace("[ProcessHeader] too many anchors",
+			          "TID", windows.GetCurrentThreadId(),
+					  "len(hd.anchors)", len(hd.anchors),
+			          "anchorLimit", hd.anchorLimit)
 			return false
 		}
 	}
@@ -1280,6 +1290,7 @@ func (hd *HeaderDownload) StartPoSDownloader(
 				}
 			}
 			if len(penalties) > 0 {
+				log.Info("[StartPoSDownloader] penalize", "len(penalties)", len(penalties))
 				penalize(ctx, penalties)
 			}
 

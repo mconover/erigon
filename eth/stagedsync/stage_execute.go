@@ -279,10 +279,12 @@ Loop:
 
 		blockHash, err := rawdb.ReadCanonicalHash(tx, blockNum)
 		if err != nil {
+			log.Info("[SpawnExecuteBlocksStage] ReadCanonicalHash", "blockNum", blockNum, "err", err)
 			return err
 		}
 		block, _, err := cfg.blockReader.BlockWithSenders(ctx, tx, blockHash, blockNum)
 		if err != nil {
+			log.Info("[SpawnExecuteBlocksStage] BlockWithSenders", "blockNum", blockNum, "err", err)
 			return err
 		}
 		if block == nil {

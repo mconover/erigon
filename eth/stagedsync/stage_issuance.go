@@ -104,7 +104,9 @@ func SpawnStageIssuance(cfg IssuanceCfg, s *StageState, tx kv.RwTx, ctx context.
 		}
 		// read body without transactions
 		hash, err := rawdb.ReadCanonicalHash(tx, currentBlockNumber)
+		log.Trace("[SpawnStageIssuance] ReadCanonicalHash", "currentBlockNumber", currentBlockNumber, "hash", hash, "err", err)
 		if err != nil {
+			log.Error("[SpawnStageIssuance] ReadCanonicalHash", "currentBlockNumber", currentBlockNumber, "err", err)
 			return err
 		}
 

@@ -78,7 +78,10 @@ func SpawnStageCumulativeIndex(cfg CumulativeIndexCfg, s *StageState, tx kv.RwTx
 		}
 
 		canonicalHash, err := rawdb.ReadCanonicalHash(tx, blockNumber)
+		log.Debug("[SpawnStageCumulativeIndex] ReadCanonicalHash", 
+		          "blockNumber", blockNumber, "canonicalHash", canonicalHash, "err", err)
 		if err != nil {
+			log.Error("[SpawnStageCumulativeIndex] ReadCanonicalHash", "blockNumber", blockNumber, "err", err)
 			return err
 		}
 

@@ -164,6 +164,7 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 	// that if so. Otherwise we need to generate a new genesis spec.
 	if err := chainKv.View(context.Background(), func(tx kv.Tx) error {
 		h, err := rawdb.ReadCanonicalHash(tx, 0)
+		log.Debug("[Ethereum.New] ReadCanonicalHash", "block", 0, "hash", h, "err", err)
 		if err != nil {
 			panic(err)
 		}

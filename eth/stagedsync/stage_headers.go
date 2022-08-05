@@ -742,7 +742,9 @@ func HeadersPOW(
 	logPrefix := s.LogPrefix()
 	// Check if this is called straight after the unwinds, which means we need to create new canonical markings
 	hash, err := rawdb.ReadCanonicalHash(tx, headerProgress)
+	log.Info("[HeadersPOW] ReadCanonicalHash", "headerProgress", headerProgress, "hash", hash, "err", err)
 	if err != nil {
+		log.Error("[HeadersPOW] ReadCanonicalHash", "headerProgress", headerProgress, "err", err)
 		return err
 	}
 	logEvery := time.NewTicker(logInterval)
@@ -750,6 +752,7 @@ func HeadersPOW(
 	if hash == (common.Hash{}) {
 		headHash := rawdb.ReadHeadHeaderHash(tx)
 		if err = fixCanonicalChain(logPrefix, logEvery, headerProgress, headHash, tx, cfg.blockReader); err != nil {
+			log.Error("[HeadersPOW] fixCanonicalChain", "headerProgress", headerProgress, "headHash", headHash, "err", err)
 			return err
 		}
 		if !useExternalTx {
@@ -788,10 +791,15 @@ Loop:
 
 		transitionedToPoS, err := rawdb.Transitioned(tx, headerProgress, cfg.chainConfig.TerminalTotalDifficulty)
 		if err != nil {
+			log.Error("[HeadersPOW] Transitioned", 
+			          "headerProgress", headerProgress, 
+			          "TerminalTotalDifficulty", cfg.chainConfig.TerminalTotalDifficulty,
+			          "err", err)
 			return err
 		}
 		if transitionedToPoS {
 			if err := s.Update(tx, headerProgress); err != nil {
+				log.Error("[HeadersPOW] Update", "headerProgress", headerProgress, "err", err)
 				return err
 			}
 			break
@@ -808,6 +816,7 @@ Loop:
 			cfg.hd.UpdateRetryTime(req, currentTime, 5*time.Second /* timeout */)
 		}
 		if len(penalties) > 0 {
+			log.Info("[HeadersPOW] penalize", "len(penalties)", len(penalties))
 			cfg.penalize(ctx, penalties)
 		}
 		maxRequests := 64 // Limit number of requests sent per round to let some headers to be inserted into the database
@@ -822,6 +831,7 @@ Loop:
 				cfg.hd.UpdateRetryTime(req, currentTime, 5*time.Second /* timeout */)
 			}
 			if len(penalties) > 0 {
+				log.Debug("[HeadersPOW] penalize", "maxRequests", maxRequests, "len(penalties)", len(penalties))
 				cfg.penalize(ctx, penalties)
 			}
 			maxRequests--
@@ -831,10 +841,17 @@ Loop:
 		if time.Since(lastSkeletonTime) > 1*time.Second {
 			req = cfg.hd.RequestSkeleton()
 			if req != nil {
+				log.Trace("[HeadersPOW] RequestSkeleton", 
+				          "req", req, 
+				          "time.Since(lastSkeletonTime)", time.Since(lastSkeletonTime))
+						  
 				_, sentToPeer = cfg.headerReqSend(ctx, req)
 				if sentToPeer {
 					cfg.hd.UpdateStats(req, true /* skeleton */)
 					lastSkeletonTime = time.Now()
+					log.Trace("[HeadersPOW] headerReqSend", 
+					          "sentToPeer", sentToPeer, 
+					          "new lastSkeletonTime", lastSkeletonTime)
 				}
 			}
 		}
@@ -1042,7 +1059,10 @@ func HeadersUnwind(u *UnwindState, s *StageState, tx kv.RwTx, cfg HeadersCfg, te
 		*/
 		if maxNum == 0 {
 			maxNum = u.UnwindPoint
-			if maxHash, err = rawdb.ReadCanonicalHash(tx, maxNum); err != nil {
+			maxHash, err = rawdb.ReadCanonicalHash(tx, maxNum); 
+			log.Info("[HeadersUnwind] ReadCanonicalHash", "maxNum", maxNum, "maxHash", maxHash, "err", err)
+			if err != nil {
+				log.Error("[HeadersUnwind] ReadCanonicalHash", "maxNum", maxNum, "err", err)
 				return err
 			}
 		}

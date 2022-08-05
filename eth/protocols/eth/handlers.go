@@ -147,7 +147,9 @@ func AnswerGetBlockBodiesQuery(db kv.Tx, query GetBlockBodiesPacket) []rlp.RawVa
 			continue
 		}
 		canonicalHash, err := rawdb.ReadCanonicalHash(db, *number)
+		log.Debug("[AnswerGetBlockBodiesQuery] ReadCanonicalHash", "number", *number, "canonicalHash", canonicalHash, "err", err)
 		if err != nil {
+			log.Info("[AnswerGetBlockBodiesQuery] ReadCanonicalHash", "number", *number, "err", err)
 			break
 		}
 		var bodyRlP []byte

@@ -1037,6 +1037,7 @@ func (br *BlockRetire) RetireBlocks(ctx context.Context, blockFrom, blockTo uint
 
 func (br *BlockRetire) PruneAncientBlocks(tx kv.RwTx) error {
 	if br.snapshots.cfg.KeepBlocks {
+		log.Info("[snapshots] Skipping PruneAncientBlocks")
 		return nil
 	}
 	currentProgress, err := stages.GetStageProgress(tx, stages.Senders)
@@ -1056,10 +1057,12 @@ func (br *BlockRetire) PruneAncientBlocks(tx kv.RwTx) error {
 func (br *BlockRetire) RetireBlocksInBackground(ctx context.Context, forwardProgress uint64, lvl log.Lvl) {
 	if br.working.Load() {
 		// go-routine is still working
+		log.Debug("[snapshots] RetireBlocksInBackground is still working")
 		return
 	}
 	if br.result != nil {
 		// Prevent invocation for the same range twice, result needs to be cleared in the Result() function
+		log.Debug("[snapshots] RetireBlocksInBackground called twice in the same range")
 		return
 	}
 
