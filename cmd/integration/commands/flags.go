@@ -99,7 +99,6 @@ func withDataDir2(cmd *cobra.Command) {
 	must(cmd.MarkFlagDirname(utils.SnapDirFlag.Name))
 
 	cmd.Flags().IntVar(&databaseVerbosity, "database.verbosity", 2, "Enabling internal db logs. Very high verbosity levels may require recompile db. Default: 2, means warning.")
-	cmd.Flags().BoolVar(&snapshotsBool, "snapshots", true, utils.SnapshotFlag.Usage)
 }
 
 func withDataDir(cmd *cobra.Command) {
@@ -113,7 +112,6 @@ func withDataDir(cmd *cobra.Command) {
 	must(cmd.MarkFlagDirname("chaindata"))
 
 	cmd.Flags().IntVar(&databaseVerbosity, "database.verbosity", 2, "Enabling internal db logs. Very high verbosity levels may require recompile db. Default: 2, means warning")
-	cmd.Flags().BoolVar(&snapshotsBool, "snapshots", true, utils.SnapshotFlag.Usage)
 }
 
 func withBatchSize(cmd *cobra.Command) {

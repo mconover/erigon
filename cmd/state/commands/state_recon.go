@@ -28,6 +28,7 @@ import (
 	"github.com/ledgerwatch/erigon/consensus/misc"
 	"github.com/ledgerwatch/erigon/core"
 	"github.com/ledgerwatch/erigon/core/state"
+	"github.com/ledgerwatch/erigon/core/systemcontracts"
 	"github.com/ledgerwatch/erigon/core/types"
 	"github.com/ledgerwatch/erigon/core/types/accounts"
 	"github.com/ledgerwatch/erigon/core/vm"
@@ -38,10 +39,12 @@ import (
 	"github.com/ledgerwatch/erigon/turbo/snapshotsync"
 	"github.com/ledgerwatch/log/v3"
 	"github.com/spf13/cobra"
+	"golang.org/x/sync/semaphore"
 )
 
 func init() {
 	withBlock(reconCmd)
+	withChain(reconCmd)
 	withDataDir(reconCmd)
 	rootCmd.AddCommand(reconCmd)
 }
@@ -69,14 +72,19 @@ type ReconWorker struct {
 	chainConfig  *params.ChainConfig
 	logger       log.Logger
 	genesis      *core.Genesis
+	epoch        epochReader
+	chain        chainReader
+	isPoSA       bool
+	posa         consensus.PoSA
 }
 
 func NewReconWorker(lock sync.Locker, wg *sync.WaitGroup, rs *state.ReconState,
-	a *libstate.Aggregator, blockReader services.FullBlockReader, allSnapshots *snapshotsync.RoSnapshots,
-	chainConfig *params.ChainConfig, logger log.Logger, genesis *core.Genesis,
+	a *libstate.Aggregator22, blockReader services.FullBlockReader, allSnapshots *snapshotsync.RoSnapshots,
+	chainConfig *params.ChainConfig, logger log.Logger, genesis *core.Genesis, engine consensus.Engine,
+	chainTx kv.Tx,
 ) *ReconWorker {
 	ac := a.MakeContext()
-	return &ReconWorker{
+	rw := &ReconWorker{
 		lock:         lock,
 		wg:           wg,
 		rs:           rs,
@@ -88,7 +96,12 @@ func NewReconWorker(lock sync.Locker, wg *sync.WaitGroup, rs *state.ReconState,
 		chainConfig:  chainConfig,
 		logger:       logger,
 		genesis:      genesis,
+		engine:       engine,
 	}
+	rw.epoch = epochReader{tx: chainTx}
+	rw.chain = chainReader{config: chainConfig, tx: chainTx, blockReader: blockReader}
+	rw.posa, rw.isPoSA = engine.(consensus.PoSA)
+	return rw
 }
 
 func (rw *ReconWorker) SetTx(tx kv.Tx) {
@@ -104,13 +117,12 @@ func (rw *ReconWorker) run() {
 		}
 		return h
 	}
-	rw.engine = initConsensusEngine(rw.chainConfig, rw.logger, rw.allSnapshots)
 	for txTask, ok := rw.rs.Schedule(); ok; txTask, ok = rw.rs.Schedule() {
 		rw.runTxTask(txTask)
 	}
 }
 
-func (rw *ReconWorker) runTxTask(txTask state.TxTask) {
+func (rw *ReconWorker) runTxTask(txTask *state.TxTask) {
 	rw.lock.Lock()
 	defer rw.lock.Unlock()
 	rw.stateReader.SetTxNum(txTask.TxNum)
@@ -122,12 +134,14 @@ func (rw *ReconWorker) runTxTask(txTask state.TxTask) {
 	daoForkTx := rw.chainConfig.DAOForkSupport && rw.chainConfig.DAOForkBlock != nil && rw.chainConfig.DAOForkBlock.Uint64() == txTask.BlockNum && txTask.TxIndex == -1
 	var err error
 	if txTask.BlockNum == 0 && txTask.TxIndex == -1 {
-		//fmt.Printf("txNum=%d, blockNum=%d, Genesis\n", txNum, blockNum)
+		//fmt.Printf("txNum=%d, blockNum=%d, Genesis\n", txTask.TxNum, txTask.BlockNum)
 		// Genesis block
 		_, ibs, err = rw.genesis.ToBlock()
 		if err != nil {
 			panic(err)
 		}
+		// For Genesis, rules should be empty, so that empty accounts can be included
+		rules = &params.Rules{}
 	} else if daoForkTx {
 		//fmt.Printf("txNum=%d, blockNum=%d, DAO fork\n", txNum, blockNum)
 		misc.ApplyDAOHardFork(ibs)
@@ -136,13 +150,30 @@ func (rw *ReconWorker) runTxTask(txTask state.TxTask) {
 		if txTask.BlockNum > 0 {
 			//fmt.Printf("txNum=%d, blockNum=%d, finalisation of the block\n", txNum, blockNum)
 			// End of block transaction in a block
-			if _, _, err := rw.engine.Finalize(rw.chainConfig, txTask.Header, ibs, txTask.Block.Transactions(), txTask.Block.Uncles(), nil /* receipts */, nil, nil, nil); err != nil {
+			syscall := func(contract common.Address, data []byte) ([]byte, error) {
+				return core.SysCallContract(contract, data, *rw.chainConfig, ibs, txTask.Header, rw.engine)
+			}
+			if _, _, err := rw.engine.Finalize(rw.chainConfig, txTask.Header, ibs, txTask.Block.Transactions(), txTask.Block.Uncles(), nil /* receipts */, rw.epoch, rw.chain, syscall); err != nil {
 				panic(fmt.Errorf("finalize of block %d failed: %w", txTask.BlockNum, err))
 			}
 		}
 	} else if txTask.TxIndex == -1 {
 		// Block initialisation
+		if rw.isPoSA {
+			systemcontracts.UpgradeBuildInSystemContract(chainConfig, txTask.Header.Number, ibs)
+		}
+		syscall := func(contract common.Address, data []byte) ([]byte, error) {
+			return core.SysCallContract(contract, data, *rw.chainConfig, ibs, txTask.Header, rw.engine)
+		}
+		rw.engine.Initialize(rw.chainConfig, rw.chain, rw.epoch, txTask.Header, txTask.Block.Transactions(), txTask.Block.Uncles(), syscall)
 	} else {
+		if rw.isPoSA {
+			if isSystemTx, err := rw.posa.IsSystemTransaction(txTask.Tx, txTask.Header); err != nil {
+				panic(err)
+			} else if isSystemTx {
+				return
+			}
+		}
 		txHash := txTask.Tx.Hash()
 		gp := new(core.GasPool).AddGas(txTask.Tx.GetGas())
 		vmConfig := vm.Config{NoReceipts: true, SkipAnalysis: core.SkipAnalysis(rw.chainConfig, txTask.BlockNum)}
@@ -180,7 +211,7 @@ func (rw *ReconWorker) runTxTask(txTask state.TxTask) {
 type FillWorker struct {
 	txNum          uint64
 	doneCount      *uint64
-	ac             *libstate.AggregatorContext
+	ac             *libstate.Aggregator22Context
 	fromKey, toKey []byte
 	currentKey     []byte
 	bitmap         roaring64.Bitmap
@@ -188,7 +219,7 @@ type FillWorker struct {
 	progress       uint64
 }
 
-func NewFillWorker(txNum uint64, doneCount *uint64, a *libstate.Aggregator, fromKey, toKey []byte) *FillWorker {
+func NewFillWorker(txNum uint64, doneCount *uint64, a *libstate.Aggregator22, fromKey, toKey []byte) *FillWorker {
 	fw := &FillWorker{
 		txNum:     txNum,
 		doneCount: doneCount,
@@ -244,6 +275,9 @@ func (fw *FillWorker) fillAccounts(plainStateCollector *etl.Collector) {
 			if incBytes > 0 {
 				a.Incarnation = bytesToUint64(val[pos : pos+incBytes])
 			}
+			if a.Incarnation > 0 {
+				a.Incarnation = state.FirstContractIncarnation
+			}
 			value := make([]byte, a.EncodingLengthForStorage())
 			a.EncodeForStorage(value)
 			if err := plainStateCollector.Collect(key, value); err != nil {
@@ -296,7 +330,7 @@ func (fw *FillWorker) fillCode(codeCollector, plainContractCollector *etl.Collec
 			if err = plainContractCollector.Collect(compositeKey, codeHash[:]); err != nil {
 				panic(err)
 			}
-			//fmt.Printf("Code [%x] => [%x]\n", compositeKey, val)
+			//fmt.Printf("Code [%x] => %d\n", compositeKey, len(val))
 		}
 	}
 }
@@ -355,8 +389,8 @@ func Recon(genesis *core.Genesis, logger log.Logger) error {
 		interruptCh <- true
 	}()
 	ctx := context.Background()
-	aggPath := filepath.Join(datadir, "erigon23")
-	agg, err := libstate.NewAggregator(aggPath, AggregationStep)
+	aggPath := filepath.Join(datadir, "agg22")
+	agg, err := libstate.NewAggregator22(aggPath, AggregationStep)
 	if err != nil {
 		return fmt.Errorf("create history: %w", err)
 	}
@@ -374,7 +408,16 @@ func Recon(genesis *core.Genesis, logger log.Logger) error {
 	if err != nil {
 		return err
 	}
+	limiter := semaphore.NewWeighted(int64(runtime.NumCPU() + 1))
+	chainDbPath := path.Join(datadir, "chaindata")
+	chainDb, err := kv2.NewMDBX(logger).Path(chainDbPath).RoTxsLimiter(limiter).Readonly().Open()
+	if err != nil {
+		return err
+	}
 	var blockReader services.FullBlockReader
+<<<<<<< HEAD
+	allSnapshots := snapshotsync.NewRoSnapshots(ethconfig.NewSnapCfg(true, false, true), path.Join(datadir, "snapshots"))
+=======
 	var allSnapshots *snapshotsync.RoSnapshots
 	var snapshotsPath string
 	if snapdir != "" {
@@ -383,8 +426,9 @@ func Recon(genesis *core.Genesis, logger log.Logger) error {
 		snapshotsPath = path.Join(datadir, "snapshots")
 	}
 	allSnapshots = snapshotsync.NewRoSnapshots(ethconfig.NewSnapCfg(true, false, true), snapshotsPath)
+>>>>>>> 91b92b3937dce5de1ceeefaa9ed013c896ca3115
 	defer allSnapshots.Close()
-	if err := allSnapshots.Reopen(); err != nil {
+	if err := allSnapshots.ReopenFolder(); err != nil {
 		return fmt.Errorf("reopen snapshot segments: %w", err)
 	}
 	blockReader = snapshotsync.NewBlockReaderWithSnapshots(allSnapshots)
@@ -422,7 +466,7 @@ func Recon(genesis *core.Genesis, logger log.Logger) error {
 	fmt.Printf("Corresponding block num = %d, txNum = %d\n", blockNum, txNum)
 	workerCount := runtime.NumCPU()
 	var wg sync.WaitGroup
-	workCh := make(chan state.TxTask, 128)
+	workCh := make(chan *state.TxTask, 128)
 	rs := state.NewReconState(workCh)
 	var fromKey, toKey []byte
 	bigCount := big.NewInt(int64(workerCount))
@@ -519,21 +563,28 @@ func Recon(genesis *core.Genesis, logger log.Logger) error {
 	var lock sync.RWMutex
 	reconWorkers := make([]*ReconWorker, workerCount)
 	roTxs := make([]kv.Tx, workerCount)
+	chainTxs := make([]kv.Tx, workerCount)
 	defer func() {
 		for i := 0; i < workerCount; i++ {
 			if roTxs[i] != nil {
 				roTxs[i].Rollback()
 			}
+			if chainTxs[i] != nil {
+				chainTxs[i].Rollback()
+			}
 		}
 	}()
 	for i := 0; i < workerCount; i++ {
-		roTxs[i], err = db.BeginRo(ctx)
-		if err != nil {
+		if roTxs[i], err = db.BeginRo(ctx); err != nil {
+			return err
+		}
+		if chainTxs[i], err = chainDb.BeginRo(ctx); err != nil {
 			return err
 		}
 	}
+	engine := initConsensusEngine(chainConfig, logger, allSnapshots)
 	for i := 0; i < workerCount; i++ {
-		reconWorkers[i] = NewReconWorker(lock.RLocker(), &wg, rs, agg, blockReader, allSnapshots, chainConfig, logger, genesis)
+		reconWorkers[i] = NewReconWorker(lock.RLocker(), &wg, rs, agg, blockReader, allSnapshots, chainConfig, logger, genesis, engine, chainTxs[i])
 		reconWorkers[i].SetTx(roTxs[i])
 	}
 	wg.Add(workerCount)
@@ -584,6 +635,11 @@ func Recon(genesis *core.Genesis, logger log.Logger) error {
 						if err != nil {
 							return err
 						}
+						defer func() {
+							if rwTx != nil {
+								rwTx.Rollback()
+							}
+						}()
 						if err = rs.Flush(rwTx); err != nil {
 							return err
 						}
@@ -619,7 +675,7 @@ func Recon(genesis *core.Genesis, logger log.Logger) error {
 		txs := b.Transactions()
 		for txIndex := -1; txIndex <= len(txs); txIndex++ {
 			if bitmap.Contains(inputTxNum) {
-				txTask := state.TxTask{
+				txTask := &state.TxTask{
 					Header:    header,
 					BlockNum:  bn,
 					Block:     b,
@@ -827,6 +883,11 @@ func Recon(genesis *core.Genesis, logger log.Logger) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if rwTx != nil {
+			rwTx.Rollback()
+		}
+	}()
 	if err = plainStateCollector.Load(rwTx, kv.PlainState, etl.IdentityLoadFunc, etl.TransformArgs{}); err != nil {
 		return err
 	}

@@ -326,15 +326,15 @@ var (
 		Usage: "HTTP-RPC server listening port",
 		Value: nodecfg.DefaultHTTPPort,
 	}
-	EngineAddr = cli.StringFlag{
-		Name:  "engine.addr",
-		Usage: "HTTP-RPC server listening interface for engineAPI",
+	AuthRpcAddr = cli.StringFlag{
+		Name:  "authrpc.addr",
+		Usage: "HTTP-RPC server listening interface for the Engine API",
 		Value: nodecfg.DefaultHTTPHost,
 	}
-	EnginePort = cli.UintFlag{
-		Name:  "engine.port",
-		Usage: "HTTP-RPC server listening port for the engineAPI",
-		Value: nodecfg.DefaultEngineHTTPPort,
+	AuthRpcPort = cli.UintFlag{
+		Name:  "authrpc.port",
+		Usage: "HTTP-RPC server listening port for the Engine API",
+		Value: nodecfg.DefaultAuthRpcPort,
 	}
 
 	JWTSecretPath = cli.StringFlag{
@@ -361,6 +361,11 @@ var (
 		Usage: "Comma separated list of virtual hostnames from which to accept requests (server enforced). Accepts '*' wildcard.",
 		Value: strings.Join(nodecfg.DefaultConfig.HTTPVirtualHosts, ","),
 	}
+	AuthRpcVirtualHostsFlag = cli.StringFlag{
+		Name:  "authrpc.vhosts",
+		Usage: "Comma separated list of virtual hostnames from which to accept Engine API requests (server enforced). Accepts '*' wildcard.",
+		Value: strings.Join(nodecfg.DefaultConfig.HTTPVirtualHosts, ","),
+	}
 	HTTPApiFlag = cli.StringFlag{
 		Name:  "http.api",
 		Usage: "API's offered over the HTTP-RPC interface",
@@ -373,7 +378,7 @@ var (
 	}
 	RpcStreamingDisableFlag = cli.BoolFlag{
 		Name:  "rpc.streaming.disable",
-		Usage: "Erigon has enalbed json streamin for some heavy endpoints (like trace_*). It's treadoff: greatly reduce amount of RAM (in some cases from 30GB to 30mb), but it produce invalid json format if error happened in the middle of streaming (because json is not streaming-friendly format)",
+		Usage: "Erigon has enalbed json streaming for some heavy endpoints (like trace_*). It's treadoff: greatly reduce amount of RAM (in some cases from 30GB to 30mb), but it produce invalid json format if error happened in the middle of streaming (because json is not streaming-friendly format)",
 	}
 	HTTPTraceFlag = cli.BoolFlag{
 		Name:  "http.trace",
@@ -724,6 +729,12 @@ var (
 	WithoutHeimdallFlag = cli.BoolFlag{
 		Name:  "bor.withoutheimdall",
 		Usage: "Run without Heimdall service (for testing purpose)",
+	}
+
+	ConfigFlag = cli.StringFlag{
+		Name:  "config",
+		Usage: "Sets erigon flags from YAML/TOML file",
+		Value: "",
 	}
 )
 
@@ -1462,11 +1473,11 @@ func SetEthConfig(ctx *cli.Context, nodeConfig *nodecfg.Config, cfg *ethconfig.C
 		if err := uploadRate.UnmarshalText([]byte(uploadRateStr)); err != nil {
 			panic(err)
 		}
-		log.Info("torrent verbosity", "level", ctx.GlobalInt(TorrentVerbosityFlag.Name))
 		lvl, dbg, err := downloadercfg.Int2LogLevel(ctx.GlobalInt(TorrentVerbosityFlag.Name))
 		if err != nil {
 			panic(err)
 		}
+		log.Info("torrent verbosity", "level", lvl.LogString())
 		cfg.Downloader, err = downloadercfg.New(cfg.Dirs.Snap, lvl, dbg, nodeConfig.P2P.NAT, downloadRate, uploadRate, ctx.GlobalInt(TorrentPortFlag.Name), ctx.GlobalInt(TorrentConnsPerFileFlag.Name), ctx.GlobalInt(TorrentDownloadSlotsFlag.Name))
 		if err != nil {
 			panic(err)
