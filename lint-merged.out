@@ -1,0 +1,24 @@
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\migrations\\migrations_test.go:53:30: not enough arguments in call to migrator.Apply\n\thave (kv.RwDB, string)\n\twant (kv.RwDB, string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\migrations\\migrations_test.go:69:29: not enough arguments in call to migrator.Apply\n\thave (kv.RwDB, string)\n\twant (kv.RwDB, string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\migrations\\migrations_test.go:113:29: not enough arguments in call to migrator.Apply\n\thave (kv.RwDB, string)\n\twant (kv.RwDB, string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\migrations\\migrations_test.go:131:29: not enough arguments in call to migrator.Apply\n\thave (kv.RwDB, string)\n\twant (kv.RwDB, string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\migrations\\migrations_test.go:177:29: not enough arguments in call to migrator.Apply\n\thave (kv.RwDB, string)\n\twant (kv.RwDB, string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\migrations\\migrations_test.go:195:29: not enough arguments in call to migrator.Apply\n\thave (kv.RwDB, string)\n\twant (kv.RwDB, string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\migrations\\migrations_test.go:261:30: not enough arguments in call to migrator.Apply\n\thave (kv.RwDB, string)\n\twant (kv.RwDB, string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\migrations\\migrations_test.go:287:30: not enough arguments in call to migrator.Apply\n\thave (kv.RwDB, string)\n\twant (kv.RwDB, string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\migrations\\txs_begin_end_test.go:62:33: not enough arguments in call to migrator.Apply\n\thave (kv.RwDB, string)\n\twant (kv.RwDB, string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\node\\node_test.go:43:32: not enough arguments in call to datadir.New\n\thave (string)\n\twant (string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\node\\node_test.go:103:68: not enough arguments in call to datadir.New\n\thave (string)\n\twant (string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\node\\node_test.go:113:56: not enough arguments in call to datadir.New\n\thave (string)\n\twant (string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\node\\nodecfg\\config_test.go:38:62: not enough arguments in call to datadir.New\n\thave (string)\n\twant (string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\node\\nodecfg\\config_test.go:47:61: not enough arguments in call to datadir.New\n\thave (string)\n\twant (string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\node\\nodecfg\\config_test.go:65:61: not enough arguments in call to datadir.New\n\thave (string)\n\twant (string, string)"
+level=error msg="[linters context] typechecking error: C:\\SOURCE\\erigon\\erigon-alpha\\node\\nodecfg\\config_test.go:99:66: not enough arguments in call to datadir.New\n\thave (string)\n\twant (string, string)"
+cmd\utils\diskusage_windows.go:25:6: `getFreeDiskSpace` is unused (deadcode)
+func getFreeDiskSpace(path string) (uint64, error) {
+     ^
+common\paths\paths.go:13: File is not `gofmt`-ed with `-s` (gofmt)
+// DefaultSnapDir is the default snap directory to use for the snapshots and 
+cmd\utils\flags.go:1133: File is not `gofmt`-ed with `-s` (gofmt)
+	//} else {
+make: *** [Makefile:148: lint] Error 1

@@ -415,9 +415,6 @@ func Recon(genesis *core.Genesis, logger log.Logger) error {
 		return err
 	}
 	var blockReader services.FullBlockReader
-<<<<<<< HEAD
-	allSnapshots := snapshotsync.NewRoSnapshots(ethconfig.NewSnapCfg(true, false, true), path.Join(datadir, "snapshots"))
-=======
 	var allSnapshots *snapshotsync.RoSnapshots
 	var snapshotsPath string
 	if snapdir != "" {
@@ -425,8 +422,7 @@ func Recon(genesis *core.Genesis, logger log.Logger) error {
 	} else {
 		snapshotsPath = path.Join(datadir, "snapshots")
 	}
-	allSnapshots = snapshotsync.NewRoSnapshots(ethconfig.NewSnapCfg(true, false, true), snapshotsPath)
->>>>>>> 91b92b3937dce5de1ceeefaa9ed013c896ca3115
+	allSnapshots := snapshotsync.NewRoSnapshots(ethconfig.NewSnapCfg(true, false, true), snapshotsPath)
 	defer allSnapshots.Close()
 	if err := allSnapshots.ReopenFolder(); err != nil {
 		return fmt.Errorf("reopen snapshot segments: %w", err)

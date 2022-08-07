@@ -1,0 +1,207 @@
+$ make test-integration
+GODEBUG=cgocheck=0 go  test -trimpath -tags nosqlite,noboltdb -buildvcs=false -ldflags "-X github.com/ledgerwatch/erigon/params.GitCommit=af9f49ece7009fb62329c04e21bd3f807f6bd639 -X github.com/ledgerwatch/erigon/params.GitBranch=alpha -X github.com/ledgerwatch/erigon/params.GitTag=v2022.07.03-dirty" ./... -p 2 --timeout 30m -tags nosqlite,noboltdb,integration
+?       github.com/ledgerwatch/erigon   [no test files]
+ok      github.com/ledgerwatch/erigon/accounts/abi      0.430s
+ok      github.com/ledgerwatch/erigon/accounts/abi/bind 0.684s
+ok      github.com/ledgerwatch/erigon/accounts/abi/bind/backends        0.807s
+?       github.com/ledgerwatch/erigon/cmd/abigen        [no test files]
+?       github.com/ledgerwatch/erigon/cmd/bootnode      [no test files]
+?       github.com/ledgerwatch/erigon/cmd/cons  [no test files]
+?       github.com/ledgerwatch/erigon/cmd/cons/commands [no test files]
+?       github.com/ledgerwatch/erigon/cmd/devnettest    [no test files]
+?       github.com/ledgerwatch/erigon/cmd/devnettest/commands   [no test files]
+?       github.com/ledgerwatch/erigon/cmd/devnettest/contracts  [no test files]
+?       github.com/ledgerwatch/erigon/cmd/devnettest/erigon     [no test files]
+?       github.com/ledgerwatch/erigon/cmd/devnettest/requests   [no test files]
+?       github.com/ledgerwatch/erigon/cmd/devnettest/rpcdaemon  [no test files]
+?       github.com/ledgerwatch/erigon/cmd/devnettest/services   [no test files]
+?       github.com/ledgerwatch/erigon/cmd/devnettest/utils      [no test files]
+?       github.com/ledgerwatch/erigon/cmd/downloader    [no test files]
+ok      github.com/ledgerwatch/erigon/cmd/downloader/downloader 0.645s
+?       github.com/ledgerwatch/erigon/cmd/downloader/downloader/downloadercfg   [no test files]
+?       github.com/ledgerwatch/erigon/cmd/downloader/downloadergrpc     [no test files]
+?       github.com/ledgerwatch/erigon/cmd/downloader/trackers   [no test files]
+?       github.com/ledgerwatch/erigon/cmd/erigon        [no test files]
+?       github.com/ledgerwatch/erigon/cmd/erigoncustom  [no test files]
+ok      github.com/ledgerwatch/erigon/cmd/evm   2.949s
+?       github.com/ledgerwatch/erigon/cmd/evm/internal/compiler [no test files]
+?       github.com/ledgerwatch/erigon/cmd/evm/internal/t8ntool  [no test files]
+?       github.com/ledgerwatch/erigon/cmd/hack  [no test files]
+?       github.com/ledgerwatch/erigon/cmd/hack/db       [no test files]
+?       github.com/ledgerwatch/erigon/cmd/hack/flow     [no test files]
+?       github.com/ledgerwatch/erigon/cmd/hack/tool     [no test files]
+?       github.com/ledgerwatch/erigon/cmd/integration   [no test files]
+?       github.com/ledgerwatch/erigon/cmd/integration/commands  [no test files]
+?       github.com/ledgerwatch/erigon/cmd/observer      [no test files]
+ok      github.com/ledgerwatch/erigon/cmd/observer/database     0.764s
+ok      github.com/ledgerwatch/erigon/cmd/observer/observer     0.698s
+?       github.com/ledgerwatch/erigon/cmd/observer/observer/node_utils  [no test files]
+ok      github.com/ledgerwatch/erigon/cmd/observer/observer/sentry_candidates   0.579s
+?       github.com/ledgerwatch/erigon/cmd/observer/reports      [no test files]
+?       github.com/ledgerwatch/erigon/cmd/observer/utils        [no test files]
+?       github.com/ledgerwatch/erigon/cmd/p2psim        [no test files]
+?       github.com/ledgerwatch/erigon/cmd/pics  [no test files]
+?       github.com/ledgerwatch/erigon/cmd/pics/contracts        [no test files]
+?       github.com/ledgerwatch/erigon/cmd/rlpdump       [no test files]
+?       github.com/ledgerwatch/erigon/cmd/rpcdaemon     [no test files]
+?       github.com/ledgerwatch/erigon/cmd/rpcdaemon/cli [no test files]
+?       github.com/ledgerwatch/erigon/cmd/rpcdaemon/cli/httpcfg [no test files]
+ok      github.com/ledgerwatch/erigon/cmd/rpcdaemon/commands    4.327s
+?       github.com/ledgerwatch/erigon/cmd/rpcdaemon/commands/contracts  [no test files]
+ok      github.com/ledgerwatch/erigon/cmd/rpcdaemon/health      0.340s
+?       github.com/ledgerwatch/erigon/cmd/rpcdaemon/rpcdaemontest       [no test files]
+?       github.com/ledgerwatch/erigon/cmd/rpcdaemon/rpcservices [no test files]
+?       github.com/ledgerwatch/erigon/cmd/rpcdaemon22   [no test files]
+?       github.com/ledgerwatch/erigon/cmd/rpcdaemon22/cli       [no test files]
+?       github.com/ledgerwatch/erigon/cmd/rpcdaemon22/cli/httpcfg       [no test files]
+ok      github.com/ledgerwatch/erigon/cmd/rpcdaemon22/commands  3.780s
+?       github.com/ledgerwatch/erigon/cmd/rpcdaemon22/commands/contracts        [no test files]
+?       github.com/ledgerwatch/erigon/cmd/rpcdaemon22/health    [no test files]
+?       github.com/ledgerwatch/erigon/cmd/rpcdaemon22/rpcdaemontest     [no test files]
+?       github.com/ledgerwatch/erigon/cmd/rpcdaemon22/rpcservices       [no test files]
+?       github.com/ledgerwatch/erigon/cmd/rpctest       [no test files]
+?       github.com/ledgerwatch/erigon/cmd/rpctest/rpctest       [no test files]
+?       github.com/ledgerwatch/erigon/cmd/sentry        [no test files]
+ok      github.com/ledgerwatch/erigon/cmd/sentry/sentry 0.569s
+?       github.com/ledgerwatch/erigon/cmd/starknet      [no test files]
+?       github.com/ledgerwatch/erigon/cmd/starknet/cmd  [no test files]
+ok      github.com/ledgerwatch/erigon/cmd/starknet/services     0.641s
+?       github.com/ledgerwatch/erigon/cmd/state [no test files]
+?       github.com/ledgerwatch/erigon/cmd/state/commands        [no test files]
+?       github.com/ledgerwatch/erigon/cmd/state/stats   [no test files]
+?       github.com/ledgerwatch/erigon/cmd/state/verify  [no test files]
+?       github.com/ledgerwatch/erigon/cmd/txpool        [no test files]
+ok      github.com/ledgerwatch/erigon/cmd/utils 0.616s
+ok      github.com/ledgerwatch/erigon/common    0.252s
+ok      github.com/ledgerwatch/erigon/common/bitutil    0.249s
+ok      github.com/ledgerwatch/erigon/common/changeset  2.215s
+ok      github.com/ledgerwatch/erigon/common/compiler   0.245s
+ok      github.com/ledgerwatch/erigon/common/dbutils    0.295s
+?       github.com/ledgerwatch/erigon/common/debug      [no test files]
+?       github.com/ledgerwatch/erigon/common/debugprint [no test files]
+ok      github.com/ledgerwatch/erigon/common/fdlimit    0.246s
+ok      github.com/ledgerwatch/erigon/common/hexutil    0.282s
+ok      github.com/ledgerwatch/erigon/common/math       0.250s
+ok      github.com/ledgerwatch/erigon/common/mclock     0.245s
+?       github.com/ledgerwatch/erigon/common/paths      [no test files]
+ok      github.com/ledgerwatch/erigon/common/prque      0.726s
+?       github.com/ledgerwatch/erigon/common/u256       [no test files]
+?       github.com/ledgerwatch/erigon/consensus [no test files]
+ok      github.com/ledgerwatch/erigon/consensus/aura    0.555s
+?       github.com/ledgerwatch/erigon/consensus/aura/auraabi    [no test files]
+?       github.com/ledgerwatch/erigon/consensus/aura/aurainterfaces     [no test files]
+?       github.com/ledgerwatch/erigon/consensus/aura/consensusconfig    [no test files]
+?       github.com/ledgerwatch/erigon/consensus/aura/contracts  [no test files]
+?       github.com/ledgerwatch/erigon/consensus/aura/test       [no test files]
+ok      github.com/ledgerwatch/erigon/consensus/bor     0.768s
+ok      github.com/ledgerwatch/erigon/consensus/clique  1.072s
+?       github.com/ledgerwatch/erigon/consensus/db      [no test files]
+ok      github.com/ledgerwatch/erigon/consensus/ethash  1.844s
+ok      github.com/ledgerwatch/erigon/consensus/misc    0.530s
+ok      github.com/ledgerwatch/erigon/consensus/parlia  0.560s
+ok      github.com/ledgerwatch/erigon/consensus/serenity        0.529s
+ok      github.com/ledgerwatch/erigon/core      1.011s
+ok      github.com/ledgerwatch/erigon/core/asm  0.621s
+ok      github.com/ledgerwatch/erigon/core/bloombits    49.740s
+ok      github.com/ledgerwatch/erigon/core/forkid       0.293s
+ok      github.com/ledgerwatch/erigon/core/rawdb        0.730s
+?       github.com/ledgerwatch/erigon/core/rawdb/rawdbreset     [no test files]
+ok      github.com/ledgerwatch/erigon/core/state        6.401s
+?       github.com/ledgerwatch/erigon/core/state/contracts      [no test files]
+?       github.com/ledgerwatch/erigon/core/systemcontracts      [no test files]
+ok      github.com/ledgerwatch/erigon/core/types        0.921s
+ok      github.com/ledgerwatch/erigon/core/types/accounts       0.371s
+ok      github.com/ledgerwatch/erigon/core/vm   2.703s
+?       github.com/ledgerwatch/erigon/core/vm/lightclient       [no test files]
+ok      github.com/ledgerwatch/erigon/core/vm/lightclient/iavl  0.150s
+ok      github.com/ledgerwatch/erigon/core/vm/runtime   0.679s
+?       github.com/ledgerwatch/erigon/core/vm/stack     [no test files]
+ok      github.com/ledgerwatch/erigon/crypto    0.450s
+ok      github.com/ledgerwatch/erigon/crypto/blake2b    0.278s
+ok      github.com/ledgerwatch/erigon/crypto/bls12381   0.617s
+?       github.com/ledgerwatch/erigon/crypto/bn256      [no test files]
+ok      github.com/ledgerwatch/erigon/crypto/bn256/cloudflare   0.279s
+ok      github.com/ledgerwatch/erigon/crypto/bn256/google       0.470s
+ok      github.com/ledgerwatch/erigon/crypto/ecies      0.369s
+ok      github.com/ledgerwatch/erigon/eth       0.558s [no tests to run]
+?       github.com/ledgerwatch/erigon/eth/calltracer    [no test files]
+?       github.com/ledgerwatch/erigon/eth/ethconfig     [no test files]
+?       github.com/ledgerwatch/erigon/eth/ethconsensusconfig    [no test files]
+?       github.com/ledgerwatch/erigon/eth/ethutils      [no test files]
+ok      github.com/ledgerwatch/erigon/eth/filters       0.636s
+ok      github.com/ledgerwatch/erigon/eth/gasprice      0.779s
+?       github.com/ledgerwatch/erigon/eth/integrity     [no test files]
+ok      github.com/ledgerwatch/erigon/eth/protocols/eth 0.554s
+ok      github.com/ledgerwatch/erigon/eth/stagedsync    0.873s
+?       github.com/ledgerwatch/erigon/eth/stagedsync/stages     [no test files]
+ok      github.com/ledgerwatch/erigon/eth/tracers       0.664s
+?       github.com/ledgerwatch/erigon/eth/tracers/internal/tracers      [no test files]
+?       github.com/ledgerwatch/erigon/eth/tracers/logger        [no test files]
+?       github.com/ledgerwatch/erigon/ethdb     [no test files]
+ok      github.com/ledgerwatch/erigon/ethdb/bitmapdb    0.480s
+?       github.com/ledgerwatch/erigon/ethdb/cbor        [no test files]
+ok      github.com/ledgerwatch/erigon/ethdb/olddb       0.457s
+ok      github.com/ledgerwatch/erigon/ethdb/privateapi  1.329s
+ok      github.com/ledgerwatch/erigon/ethdb/prune       0.344s
+?       github.com/ledgerwatch/erigon/ethstats  [no test files]
+ok      github.com/ledgerwatch/erigon/event     0.747s
+?       github.com/ledgerwatch/erigon/internal/cmdtest  [no test files]
+?       github.com/ledgerwatch/erigon/internal/debug    [no test files]
+?       github.com/ledgerwatch/erigon/internal/ethapi   [no test files]
+?       github.com/ledgerwatch/erigon/internal/flags    [no test files]
+?       github.com/ledgerwatch/erigon/internal/testlog  [no test files]
+ok      github.com/ledgerwatch/erigon/metrics   0.357s
+?       github.com/ledgerwatch/erigon/metrics/exp       [no test files]
+ok      github.com/ledgerwatch/erigon/migrations        0.700s
+ok      github.com/ledgerwatch/erigon/node      0.833s
+ok      github.com/ledgerwatch/erigon/node/nodecfg      0.507s
+?       github.com/ledgerwatch/erigon/node/nodecfg/datadir      [no test files]
+ok      github.com/ledgerwatch/erigon/p2p       1.605s
+ok      github.com/ledgerwatch/erigon/p2p/discover      6.091s
+ok      github.com/ledgerwatch/erigon/p2p/discover/v4wire       0.449s
+ok      github.com/ledgerwatch/erigon/p2p/discover/v5wire       0.589s
+ok      github.com/ledgerwatch/erigon/p2p/dnsdisc       1.082s
+ok      github.com/ledgerwatch/erigon/p2p/enode 1.402s
+ok      github.com/ledgerwatch/erigon/p2p/enr   0.293s
+ok      github.com/ledgerwatch/erigon/p2p/nat   0.683s
+ok      github.com/ledgerwatch/erigon/p2p/netutil       0.246s
+ok      github.com/ledgerwatch/erigon/p2p/rlpx  0.388s
+?       github.com/ledgerwatch/erigon/p2p/simulations   [no test files]
+ok      github.com/ledgerwatch/erigon/p2p/simulations/adapters  0.829s
+?       github.com/ledgerwatch/erigon/p2p/simulations/pipes     [no test files]
+ok      github.com/ledgerwatch/erigon/params    0.474s
+?       github.com/ledgerwatch/erigon/params/networkname        [no test files]
+ok      github.com/ledgerwatch/erigon/rlp       0.278s
+ok      github.com/ledgerwatch/erigon/rpc       8.867s
+?       github.com/ledgerwatch/erigon/rpc/rpccfg        [no test files]
+ok      github.com/ledgerwatch/erigon/tests     1.940s
+?       github.com/ledgerwatch/erigon/tests/contracts   [no test files]
+ok      github.com/ledgerwatch/erigon/tests/fuzzers/abi 0.403s
+?       github.com/ledgerwatch/erigon/tests/fuzzers/bitutil     [no test files]
+?       github.com/ledgerwatch/erigon/tests/fuzzers/bls12381    [no test files]
+?       github.com/ledgerwatch/erigon/tests/fuzzers/difficulty  [no test files]
+?       github.com/ledgerwatch/erigon/tests/fuzzers/difficulty/debug    [no test files]
+?       github.com/ledgerwatch/erigon/tests/fuzzers/rlp [no test files]
+?       github.com/ledgerwatch/erigon/tests/fuzzers/runtime     [no test files]
+ok      github.com/ledgerwatch/erigon/tests/fuzzers/secp256k1   0.359s
+?       github.com/ledgerwatch/erigon/turbo/adapter     [no test files]
+?       github.com/ledgerwatch/erigon/turbo/adapter/ethapi      [no test files]
+?       github.com/ledgerwatch/erigon/turbo/app [no test files]
+?       github.com/ledgerwatch/erigon/turbo/builder     [no test files]
+?       github.com/ledgerwatch/erigon/turbo/cli [no test files]
+?       github.com/ledgerwatch/erigon/turbo/engineapi   [no test files]
+?       github.com/ledgerwatch/erigon/turbo/mock        [no test files]
+?       github.com/ledgerwatch/erigon/turbo/node        [no test files]
+ok      github.com/ledgerwatch/erigon/turbo/rlphacks    12.179s
+?       github.com/ledgerwatch/erigon/turbo/rpchelper   [no test files]
+?       github.com/ledgerwatch/erigon/turbo/services    [no test files]
+ok      github.com/ledgerwatch/erigon/turbo/shards      0.700s
+ok      github.com/ledgerwatch/erigon/turbo/snapshotsync        0.813s
+?       github.com/ledgerwatch/erigon/turbo/snapshotsync/snap   [no test files]
+?       github.com/ledgerwatch/erigon/turbo/snapshotsync/snapcfg        [no test files]
+ok      github.com/ledgerwatch/erigon/turbo/stages      2.817s
+ok      github.com/ledgerwatch/erigon/turbo/stages/bodydownload 0.605s
+ok      github.com/ledgerwatch/erigon/turbo/stages/headerdownload       0.558s
+?       github.com/ledgerwatch/erigon/turbo/transactions        [no test files]
+ok      github.com/ledgerwatch/erigon/turbo/trie        1.145s
+?       github.com/ledgerwatch/erigon/visual    [no test files]

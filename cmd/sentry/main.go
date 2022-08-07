@@ -67,13 +67,7 @@ var rootCmd = &cobra.Command{
 		debug.Exit()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-<<<<<<< HEAD
-		dirs := datadir.New(datadirCli)
-=======
-		p := eth.ETH66
-
 		dirs := datadir.New(datadirCli, "")
->>>>>>> 91b92b3937dce5de1ceeefaa9ed013c896ca3115
 		nodeConfig := node2.NewNodeConfig()
 		p2pConfig, err := utils.NewP2PConfig(
 			nodiscover,
